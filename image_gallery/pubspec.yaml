@@ -21,6 +21,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   shared_preferences: ^0.5.2
   http: ^0.12.0+2
+  image_picker: ^0.6.0+1
 
 dev_dependencies:
   flutter_test:
@@ -40,6 +41,9 @@ flutter:
 
   assets:
     - assets/logo.png
+    - assets/camera.png
+    - assets/burger.png
+    - assets/gallery.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

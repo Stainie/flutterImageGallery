@@ -1,5 +1,6 @@
-import '../model/example.dart';
+import '../model/gallery_image.dart';
+import 'dart:io';
 
 class DomainCache {
-  static List<Example> allExamples;
+  static List<File> galleryImages;
 }

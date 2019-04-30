@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as math;
 import 'dart:async';
 import 'dart:math';
 
 import 'gallery.dart';
+
+import '../cache/domain_cache.dart';
 
 class LandingPage extends StatefulWidget {
   @override
@@ -67,6 +70,9 @@ class LandingPageState extends State<LandingPage>
   }
 
   Future<bool> _initAll() async {
+
+    DomainCache.galleryImages = new List<File>();
+
     _increaseAmount();
 
     await Future.delayed(Duration(seconds: 1));
