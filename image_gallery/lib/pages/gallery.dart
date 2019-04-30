@@ -3,9 +3,12 @@ import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
+import 'single_image.dart';
+
 import '../helping_scripts/view_generators/card_generator.dart';
 import '../cache/domain_cache.dart';
 
+import '../model/comment.dart';
 import '../model/gallery_image.dart';
 
 class GalleryPage extends StatefulWidget {
@@ -14,12 +17,12 @@ class GalleryPage extends StatefulWidget {
 }
 
 class GalleryPageState extends State<GalleryPage> {
-  List<File> _galleryImages = new List<File>();
+  List<GalleryImage> _galleryImages = new List<GalleryImage>();
 
-  List<CardItem> _buildList(List<File> galleryImages) {
+  List<CardItem> _buildList(List<GalleryImage> galleryImages) {
     return galleryImages
-        .map((galleryImg) => new CardItem(
-            galleryImg, galleryImages.indexOf(galleryImg), null))
+        .map((galleryImg) => new CardItem(galleryImg,
+            galleryImages.indexOf(galleryImg), routeToImage))
         .toList();
   }
 
@@ -29,6 +32,11 @@ class GalleryPageState extends State<GalleryPage> {
     // setState(() {
     //   _galleryImages = DomainCache.galleryImages;
     // });
+  }
+
+  void routeToImage(GalleryImage image) {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => SingleImage(image)));
   }
 
   Future<bool> closeApp() async {
@@ -43,7 +51,8 @@ class GalleryPageState extends State<GalleryPage> {
     // DomainCache.galleryImages.add(img);
 
     setState(() {
-     _galleryImages.add(img); 
+      _galleryImages
+          .add(new GalleryImage(img, DateTime.now(), new List<Comment>()));
     });
 
     return true;
@@ -55,7 +64,8 @@ class GalleryPageState extends State<GalleryPage> {
     // DomainCache.galleryImages.add(img);
 
     setState(() {
-     _galleryImages.add(img); 
+      _galleryImages
+          .add(new GalleryImage(img, DateTime.now(), new List<Comment>()));
     });
 
     return true;
@@ -71,7 +81,7 @@ class GalleryPageState extends State<GalleryPage> {
             height: 19.0,
           ),
           onPressed: () => {}),
-      elevation: 0.0,
+      elevation: 0.6,
       centerTitle: true,
       iconTheme: new IconThemeData(color: Colors.grey),
       title: Text("Gallery",
@@ -85,21 +95,19 @@ class GalleryPageState extends State<GalleryPage> {
       backgroundColor: const Color(0xfffafcff),
       actions: <Widget>[
         IconButton(
-          icon: new Image.asset(
-            "assets/gallery.png",
-            width: 20.0,
-            height: 18.0,
-          ),
-          onPressed: pickImageGallery
-        ),
+            icon: new Image.asset(
+              "assets/gallery.png",
+              width: 20.0,
+              height: 18.0,
+            ),
+            onPressed: pickImageGallery),
         IconButton(
-          icon: new Image.asset(
-            "assets/camera.png",
-            width: 20.0,
-            height: 18.0,
-          ),
-          onPressed: pickImageCamera
-        )
+            icon: new Image.asset(
+              "assets/camera.png",
+              width: 20.0,
+              height: 18.0,
+            ),
+            onPressed: pickImageCamera)
       ],
     );
 

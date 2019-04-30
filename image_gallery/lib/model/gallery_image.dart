@@ -1,7 +1,15 @@
+import 'dart:io';
+
+import 'comment.dart';
+
 class GalleryImage {
-  String _path;
+  File _file;
+  DateTime _timeTaken;
+  List<Comment> _comments;
 
-  GalleryImage(this._path);
+  GalleryImage(this._file, this._timeTaken, this._comments);
 
-  String get path => _path;
+  File get file => _file;
+  DateTime get timeTaken => _timeTaken;
+  List<Comment> get comments => _comments;
 }
