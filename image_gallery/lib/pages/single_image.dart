@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../helping_scripts/handlers/prefs_handler.dart';
+import '../cache/domain_cache.dart';
+
+import 'login.dart';
+
 import '../model/gallery_image.dart';
 import '../model/comment.dart';
 
@@ -13,11 +18,15 @@ class SingleImage extends StatefulWidget {
 }
 
 class SingleImageState extends State<SingleImage> {
+  final GlobalKey<ScaffoldState> _drawerKey = new GlobalKey<ScaffoldState>();
   final GalleryImage _image;
 
   final _commentController = TextEditingController();
+  PrefsHandler _prefs;
 
-  SingleImageState(this._image);
+  SingleImageState(this._image) {
+    _prefs = new PrefsHandler();
+  }
 
   void _addComment(String text) {
     setState(() {
@@ -26,17 +35,98 @@ class SingleImageState extends State<SingleImage> {
     _commentController.text = "";
   }
 
+  Future<bool> saveUnlogged() async {
+    _prefs.setBool("logged", false);
+    _prefs.setString("uuid", "");
+    _prefs.setString("token", "");
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
+    Widget _wDrawer = Drawer(
+      child: ListView(
+        children: <Widget>[
+          UserAccountsDrawerHeader(
+            accountName: Text("Test User",
+                style: const TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontFamily: "Poppins",
+                    color: const Color(0xff9b9b9b),
+                    fontStyle: FontStyle.normal,
+                    letterSpacing: 0.8,
+                    fontSize: 16.0)),
+            accountEmail: Text(DomainCache.user.email,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontFamily: "Poppins",
+                    color: const Color(0xff9b9b9b),
+                    fontStyle: FontStyle.normal,
+                    letterSpacing: 0.8,
+                    fontSize: 16.0)),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: NetworkImage(
+                  "https://cdn1.iconfinder.com/data/icons/ninja-things-1/1772/ninja-simple-512.png"),
+            ),
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    fit: BoxFit.fill,
+                    image: NetworkImage(
+                        "https://img3.stockfresh.com/files/v/victoria_andreas/m/95/1856355_stock-photo-gallery-interior-with-empty-frames-on-blue-wall.jpg"))),
+          ),
+          ListTile(
+            dense: true,
+            leading: GestureDetector(
+              onTap: () => saveUnlogged(),
+              child: Icon(
+                Icons.arrow_back_ios,
+                color: const Color(0xffc8c6c9),
+                size: 18.0,
+              ),
+            ),
+            title: Padding(
+              padding: const EdgeInsets.only(left: 50.0),
+              child: Text("Log out",
+                  style: const TextStyle(
+                      letterSpacing: 0.89,
+                      color: const Color(0xff9b9b9b),
+                      fontWeight: FontWeight.w400,
+                      fontFamily: "Poppins",
+                      fontStyle: FontStyle.normal,
+                      fontSize: 16.0)),
+            ),
+          ),
+          ListTile(
+            dense: true,
+            title: Padding(
+              padding: const EdgeInsets.only(left: 50.0),
+              child: Text("Close",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontFamily: "Poppins",
+                      color: const Color(0xff9b9b9b),
+                      fontStyle: FontStyle.normal,
+                      letterSpacing: 0.8,
+                      fontSize: 16.0)),
+            ),
+            trailing: Icon(Icons.close),
+          )
+        ],
+      ),
+    );
 
     Widget _wImageAppBar = AppBar(
+      key: _drawerKey,
       leading: IconButton(
           icon: new Image.asset(
             "assets/burger.png",
             width: 18.0,
             height: 19.0,
           ),
-          onPressed: () => {}),
+          onPressed: () => _drawerKey.currentState.openDrawer()),
       elevation: 0.0,
       centerTitle: true,
       iconTheme: new IconThemeData(color: Colors.grey),
@@ -80,19 +170,20 @@ class SingleImageState extends State<SingleImage> {
                     fontWeight: FontWeight.w400,
                     fontFamily: "Poppins",
                     fontStyle: FontStyle.normal,
-                    fontSize: 14.0 * (MediaQuery.of(context).size.width / 375.0)),
+                    fontSize:
+                        14.0 * (MediaQuery.of(context).size.width / 375.0)),
                 hintText: "Add a comment ...",
                 hintStyle: TextStyle(
                     color: const Color(0xff4a4a4a),
                     fontWeight: FontWeight.w400,
                     fontFamily: "Poppins",
                     fontStyle: FontStyle.normal,
-                    fontSize: 14.0 * (MediaQuery.of(context).size.width / 375.0)),
+                    fontSize:
+                        14.0 * (MediaQuery.of(context).size.width / 375.0)),
                 contentPadding: EdgeInsets.only(
                     top: 15.0 * (MediaQuery.of(context).size.width / 375.0)),
               )),
         ));
-
 
     Widget _wPerksExpand = Container(
       width: MediaQuery.of(context).size.width - 26.0,
@@ -186,6 +277,7 @@ class SingleImageState extends State<SingleImage> {
     return Scaffold(
       backgroundColor: const Color(0xfffafcff),
       appBar: _wImageAppBar,
+      drawer: _wDrawer,
       body: Container(
         child: ListView(
           children: <Widget>[

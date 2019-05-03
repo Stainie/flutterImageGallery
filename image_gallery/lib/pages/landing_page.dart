@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart' as math;
 import 'dart:async';
 import 'dart:math';
 
 import 'gallery.dart';
+import 'login.dart';
 
 import '../cache/domain_cache.dart';
 
@@ -59,7 +62,7 @@ class LandingPageState extends State<LandingPage>
     ).animate(_controller);
 
     _controller.forward();
-    
+
     _initAll();
   }
 
@@ -70,7 +73,6 @@ class LandingPageState extends State<LandingPage>
   }
 
   Future<bool> _initAll() async {
-
     DomainCache.galleryImages = new List<File>();
 
     _increaseAmount();
@@ -91,8 +93,22 @@ class LandingPageState extends State<LandingPage>
 
     await Future.delayed(Duration(seconds: 1));
 
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => GalleryPage()));
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    const jsonCodec = const JsonCodec();
+    bool logged = false;
+
+    if (prefs.getBool("logged") != null) {
+      logged = prefs.getBool("logged");
+    }
+
+    if (logged) {
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => GalleryPage()));
+          return true;
+    }
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+
 
     return true;
   }

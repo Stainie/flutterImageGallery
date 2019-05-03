@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
 import 'single_image.dart';
+import 'login.dart';
 
+import '../helping_scripts/handlers/prefs_handler.dart';
 import '../helping_scripts/view_generators/card_generator.dart';
 import '../cache/domain_cache.dart';
 
@@ -18,11 +20,17 @@ class GalleryPage extends StatefulWidget {
 
 class GalleryPageState extends State<GalleryPage> {
   List<GalleryImage> _galleryImages = new List<GalleryImage>();
+  PrefsHandler _prefs;
+  final GlobalKey<ScaffoldState> _drawerKey = new GlobalKey<ScaffoldState>();
+
+  GalleryPageState() {
+    _prefs = new PrefsHandler();
+  }
 
   List<CardItem> _buildList(List<GalleryImage> galleryImages) {
     return galleryImages
-        .map((galleryImg) => new CardItem(galleryImg,
-            galleryImages.indexOf(galleryImg), routeToImage))
+        .map((galleryImg) => new CardItem(
+            galleryImg, galleryImages.indexOf(galleryImg), routeToImage))
         .toList();
   }
 
@@ -71,16 +79,98 @@ class GalleryPageState extends State<GalleryPage> {
     return true;
   }
 
+  Future<bool> saveUnlogged() async {
+    _prefs.setBool("logged", false);
+    _prefs.setString("uuid", "");
+    _prefs.setString("token", "");
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
+    Widget _wDrawer = Drawer(
+      child: ListView(
+        children: <Widget>[
+          UserAccountsDrawerHeader(
+            accountName: Text("Test User",
+                style: const TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontFamily: "Poppins",
+                    color: const Color(0xff9b9b9b),
+                    fontStyle: FontStyle.normal,
+                    letterSpacing: 0.8,
+                    fontSize: 16.0)),
+            accountEmail: Text(DomainCache.user.email,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontFamily: "Poppins",
+                    color: const Color(0xff9b9b9b),
+                    fontStyle: FontStyle.normal,
+                    letterSpacing: 0.8,
+                    fontSize: 16.0)),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: NetworkImage(
+                  "https://cdn1.iconfinder.com/data/icons/ninja-things-1/1772/ninja-simple-512.png"),
+            ),
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    fit: BoxFit.fill,
+                    image: NetworkImage(
+                        "https://img3.stockfresh.com/files/v/victoria_andreas/m/95/1856355_stock-photo-gallery-interior-with-empty-frames-on-blue-wall.jpg"))),
+          ),
+          ListTile(
+            dense: true,
+            leading: GestureDetector(
+              onTap: () => saveUnlogged(),
+              child: Icon(
+                Icons.arrow_back_ios,
+                color: const Color(0xffc8c6c9),
+                size: 18.0,
+              ),
+            ),
+            title: Padding(
+              padding: const EdgeInsets.only(left: 50.0),
+              child: Text("Log out",
+                  style: const TextStyle(
+                      letterSpacing: 0.89,
+                      color: const Color(0xff9b9b9b),
+                      fontWeight: FontWeight.w400,
+                      fontFamily: "Poppins",
+                      fontStyle: FontStyle.normal,
+                      fontSize: 16.0)),
+            ),
+          ),
+          ListTile(
+            dense: true,
+            title: Padding(
+              padding: const EdgeInsets.only(left: 50.0),
+              child: Text("Close",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontFamily: "Poppins",
+                      color: const Color(0xff9b9b9b),
+                      fontStyle: FontStyle.normal,
+                      letterSpacing: 0.8,
+                      fontSize: 16.0)),
+            ),
+            trailing: Icon(Icons.close),
+          )
+        ],
+      ),
+    );
+
     Widget _wGalleryAppBar = AppBar(
+      key: _drawerKey,
       leading: IconButton(
           icon: new Image.asset(
             "assets/burger.png",
             width: 18.0,
             height: 19.0,
           ),
-          onPressed: () => {}),
+          onPressed: () => _drawerKey.currentState.openDrawer()),
       elevation: 0.6,
       centerTitle: true,
       iconTheme: new IconThemeData(color: Colors.grey),
@@ -141,6 +231,7 @@ class GalleryPageState extends State<GalleryPage> {
       child: Scaffold(
         backgroundColor: const Color(0xfffafcff),
         appBar: _wGalleryAppBar,
+        drawer: _wDrawer,
         body: Container(
           child: Column(
             children: <Widget>[

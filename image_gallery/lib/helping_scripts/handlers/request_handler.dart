@@ -19,6 +19,19 @@ class RequestHandler {
 
     return response;
   }
+  
+  static Future<http.Response> executePostRequestWithToken(
+      String route, String token, String body) async {
+    http.Response response = await http.post(Uri.encodeFull(route),
+        headers: {
+          "Accept": "application/json",
+          "Content-type": "application/json",
+          "access-token": token
+        },
+        body: body);
+
+    return response;
+  }
 
   static Future<http.Response> executePostRequestNoBody(String route) async {
     http.Response response = await http.post(Uri.encodeFull(route), headers: {
