@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_amazon_s3/flutter_amazon_s3.dart';
 
 import 'single_image.dart';
 import 'login.dart';
 
 import '../helping_scripts/handlers/prefs_handler.dart';
+import '../helping_scripts/handlers/click_handler.dart';
 import '../helping_scripts/view_generators/card_generator.dart';
 import '../cache/domain_cache.dart';
 
@@ -21,10 +23,13 @@ class GalleryPage extends StatefulWidget {
 class GalleryPageState extends State<GalleryPage> {
   List<GalleryImage> _galleryImages = new List<GalleryImage>();
   PrefsHandler _prefs;
+  ClickHandler _click;
+  
   final GlobalKey<ScaffoldState> _drawerKey = new GlobalKey<ScaffoldState>();
 
   GalleryPageState() {
     _prefs = new PrefsHandler();
+    _click = new ClickHandler();
   }
 
   List<CardItem> _buildList(List<GalleryImage> galleryImages) {
@@ -58,6 +63,9 @@ class GalleryPageState extends State<GalleryPage> {
 
     // DomainCache.galleryImages.add(img);
 
+    String uploadedImageUrl = await FlutterAmazonS3.uploadImage(
+          img.path, "BUCKET_NAME", "IDENTITY_POOL_ID");
+
     setState(() {
       _galleryImages
           .add(new GalleryImage(img, DateTime.now(), new List<Comment>()));
@@ -70,6 +78,9 @@ class GalleryPageState extends State<GalleryPage> {
     File img = await ImagePicker.pickImage(source: ImageSource.gallery);
 
     // DomainCache.galleryImages.add(img);
+
+    String uploadedImageUrl = await FlutterAmazonS3.uploadImage(
+          img.path, "BUCKET_NAME", "IDENTITY_POOL_ID");
 
     setState(() {
       _galleryImages
@@ -103,7 +114,7 @@ class GalleryPageState extends State<GalleryPage> {
                     fontStyle: FontStyle.normal,
                     letterSpacing: 0.8,
                     fontSize: 16.0)),
-            accountEmail: Text(DomainCache.user.email,
+            accountEmail: Text(_prefs.getString("email"),
                 style: const TextStyle(
                     fontWeight: FontWeight.w400,
                     fontFamily: "Poppins",
@@ -124,7 +135,7 @@ class GalleryPageState extends State<GalleryPage> {
           ListTile(
             dense: true,
             leading: GestureDetector(
-              onTap: () => saveUnlogged(),
+              onTap: () => _click.clickActionOnce(saveUnlogged),
               child: Icon(
                 Icons.arrow_back_ios,
                 color: const Color(0xffc8c6c9),
@@ -157,13 +168,13 @@ class GalleryPageState extends State<GalleryPage> {
                       fontSize: 16.0)),
             ),
             trailing: Icon(Icons.close),
+            onTap: () => Navigator.of(context).pop(),
           )
         ],
       ),
     );
 
     Widget _wGalleryAppBar = AppBar(
-      key: _drawerKey,
       leading: IconButton(
           icon: new Image.asset(
             "assets/burger.png",
@@ -230,6 +241,7 @@ class GalleryPageState extends State<GalleryPage> {
       onWillPop: () async => closeApp(),
       child: Scaffold(
         backgroundColor: const Color(0xfffafcff),
+        key: _drawerKey,
         appBar: _wGalleryAppBar,
         drawer: _wDrawer,
         body: Container(

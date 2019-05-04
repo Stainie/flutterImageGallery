@@ -30,7 +30,7 @@ class SingleImageState extends State<SingleImage> {
 
   void _addComment(String text) {
     setState(() {
-      _image.comments.add(new Comment(text, DateTime.now(), "My Profile"));
+      _image.comments.add(new Comment(text, DateTime.now(), "My Profile", ""));
     });
     _commentController.text = "";
   }
@@ -98,6 +98,7 @@ class SingleImageState extends State<SingleImage> {
                       fontStyle: FontStyle.normal,
                       fontSize: 16.0)),
             ),
+            onTap: () => Navigator.of(context).pop(),
           ),
           ListTile(
             dense: true,
@@ -119,7 +120,6 @@ class SingleImageState extends State<SingleImage> {
     );
 
     Widget _wImageAppBar = AppBar(
-      key: _drawerKey,
       leading: IconButton(
           icon: new Image.asset(
             "assets/burger.png",
@@ -276,6 +276,7 @@ class SingleImageState extends State<SingleImage> {
 
     return Scaffold(
       backgroundColor: const Color(0xfffafcff),
+      key: _drawerKey,
       appBar: _wImageAppBar,
       drawer: _wDrawer,
       body: Container(

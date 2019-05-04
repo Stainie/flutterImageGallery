@@ -22,6 +22,7 @@ dependencies:
   shared_preferences: ^0.5.2
   http: ^0.12.0+2
   image_picker: ^0.6.0+1
+  flutter_amazon_s3: ^0.0.9
 
 dev_dependencies:
   flutter_test:
@@ -44,6 +45,8 @@ flutter:
     - assets/camera.png
     - assets/burger.png
     - assets/gallery.png
+    - assets/visibility_off.png
+    - assets/visibility_on.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

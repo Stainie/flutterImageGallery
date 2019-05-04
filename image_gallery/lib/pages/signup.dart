@@ -162,13 +162,13 @@ class SingupState extends State<Signup> {
     http.Response responseSignup = await RequestHandler.executePostRequest(
         ConstantRoutes.createUser, json);
 
-    if (responseSignup.statusCode != 200) {
+    if (responseSignup.statusCode != 200 && responseSignup.statusCode != 201) {
       var responseBody = _jsonCodec.decode(responseSignup.body);
 
       _click.unlock();
       _onChangedLoad(false);
-      _showAlert(responseBody["error"]);
-      print(responseBody["error"]);
+      _showAlert(responseBody["info"][0]["msg"]);
+      print(responseBody);
       return responseBody["error"];
     }
 
@@ -178,17 +178,20 @@ class SingupState extends State<Signup> {
     var responseBody = _jsonCodec.decode(responseLogIn.body);
     print(responseBody);
 
-    if (responseLogIn.statusCode != 200) {
+    if (responseLogIn.statusCode != 200 && responseSignup.statusCode != 201) {
       _click.unlock();
       _onChangedLoad(false);
-      _showAlert(responseBody["error"]);
-      print(responseBody["error"]);
+      _showAlert(responseBody["info"][0]["msg"]);
+      print(responseBody);
       return responseBody["error"];
     }
 
     _prefs.setString("email", _emailController.text);
     _prefs.setString("password", _passwordController.text);
     _prefs.setBool("logged", true);
+
+    print(user);
+    
     DomainCache.user = user;
     DomainCache.token = responseBody["info"]["token"];
 
@@ -458,6 +461,7 @@ class SingupState extends State<Signup> {
               SizedBox(
                 height: 50.0 * (MediaQuery.of(context).size.height / 667.0),
               ),
+              email,
               password,
               passwordConfirm,
               SizedBox(
