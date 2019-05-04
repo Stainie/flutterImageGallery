@@ -13,6 +13,8 @@ import '../pages/signup.dart';
 import '../pages/gallery.dart';
 
 import '../model/user.dart';
+import '../model/comment.dart';
+import '../model/gallery_image_server.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -149,7 +151,39 @@ class LoginState extends State<Login> {
     _prefs.setString("password", _passwordController.text);
     _prefs.setBool("logged", true);
     DomainCache.user = user;
-    DomainCache.token = responseBody["info"]["token"];
+    // DomainCache.token = responseBody["info"]["token"];
+
+    /* --- USED FOR SERVER VERSION ---*/
+
+    /* _prefs.setString("uuid", responseBody["info"]["user"]["_id"]);
+    http.Response responseImages = await RequestHandler.executeGetRequest(
+        ConstantRoutes.getImages + _prefs.getString("uuid"));
+
+    var responseData = _jsonCodec.decode(responseImages.body);
+
+    List<GalleryImageServer> images = new List<GalleryImageServer>();
+
+    List imagesBody = responseData["info"];
+
+    for (var i = 0; i < imagesBody.length; i++) {
+      GalleryImageServer img = new GalleryImageServer(
+          imagesBody[i]["title"], imagesBody[i]["imageUrl"]);
+      img.setUuid(imagesBody[i]["uuid"]);
+
+      http.Response responseComments = await RequestHandler.executeGetRequest(
+          ConstantRoutes.getComments + img.uuid);
+      var responseDataComments = _jsonCodec.decode(responseComments.body);
+      List commentsBody = responseDataComments["info"];
+
+      for (var j = 0; j < commentsBody.length; j++) {
+        img.comments.add(new Comment(commentsBody[j]["text"],
+            commentsBody[j]["timeWritten"], commentsBody[j]["writter"]));
+      }
+
+      images.add(img);
+    }
+
+    DomainCache.galleryImagesServer = images; */
 
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => GalleryPage()));

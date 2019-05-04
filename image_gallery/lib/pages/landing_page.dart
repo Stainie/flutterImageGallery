@@ -5,11 +5,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vector_math/vector_math_64.dart' as math;
 import 'dart:async';
 import 'dart:math';
+import 'package:http/http.dart' as http;
+
+import '../helping_scripts/handlers/request_handler.dart';
+import '../CONSTANTS/constant_routes.dart';
 
 import 'gallery.dart';
 import 'login.dart';
 
 import '../cache/domain_cache.dart';
+import '../model/gallery_image_server.dart';
+import '../model/comment.dart';
 
 class LandingPage extends StatefulWidget {
   @override
@@ -23,6 +29,7 @@ class LandingPageState extends State<LandingPage>
 
   AnimationController _controller;
   Animation<double> animation;
+  final _jsonCodec = const JsonCodec();
 
   final title = Center(
     child: Text("HolyGallery",
@@ -102,6 +109,40 @@ class LandingPageState extends State<LandingPage>
     }
 
     if (logged) {
+
+      if (prefs.getString("email") == null) {
+        prefs.setBool("logged", false);
+        _initAll();
+        return true;
+      }
+
+      /* --- USED FOR SERVER VERSION ---*/
+
+      /* http.Response responseImages = await RequestHandler.executeGetRequest(ConstantRoutes.getImages + prefs.getString("uuid"));
+
+      var responseData = _jsonCodec.decode(responseImages.body);
+
+      List<GalleryImageServer> images = new List<GalleryImageServer>();
+
+      List imagesBody = responseData["info"];
+
+      for (var i = 0; i < imagesBody.length; i++) {
+        GalleryImageServer img = new GalleryImageServer(imagesBody[i]["title"], imagesBody[i]["imageUrl"]);
+        img.setUuid(imagesBody[i]["uuid"]);
+
+        http.Response responseComments = await RequestHandler.executeGetRequest(ConstantRoutes.getComments + img.uuid);
+        var responseDataComments = _jsonCodec.decode(responseComments.body);
+        List commentsBody = responseDataComments["info"];
+
+        for (var j = 0; j < commentsBody.length; j++) {
+          img.comments.add(new Comment(commentsBody[j]["text"], commentsBody[j]["timeWritten"], commentsBody[j]["writter"]));
+        }
+
+        images.add(img);
+      }
+
+      DomainCache.galleryImagesServer = images; */
+
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => GalleryPage()));
           return true;

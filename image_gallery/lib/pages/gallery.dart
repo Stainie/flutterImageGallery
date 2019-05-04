@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_amazon_s3/flutter_amazon_s3.dart';
+// import 'package:flutter_amazon_s3/flutter_amazon_s3.dart';
+import 'package:http/http.dart' as http;
 
 import 'single_image.dart';
 import 'login.dart';
 
 import '../helping_scripts/handlers/prefs_handler.dart';
 import '../helping_scripts/handlers/click_handler.dart';
+import '../helping_scripts/handlers/request_handler.dart';
 import '../helping_scripts/view_generators/card_generator.dart';
+
 import '../cache/domain_cache.dart';
+import '../CONSTANTS/constant_routes.dart';
 
 import '../model/comment.dart';
 import '../model/gallery_image.dart';
+import '../model/gallery_image_server.dart';
 
 class GalleryPage extends StatefulWidget {
   @override
@@ -24,7 +30,8 @@ class GalleryPageState extends State<GalleryPage> {
   List<GalleryImage> _galleryImages = new List<GalleryImage>();
   PrefsHandler _prefs;
   ClickHandler _click;
-  
+  final _jsonCodec = const JsonCodec();
+
   final GlobalKey<ScaffoldState> _drawerKey = new GlobalKey<ScaffoldState>();
 
   GalleryPageState() {
@@ -49,7 +56,20 @@ class GalleryPageState extends State<GalleryPage> {
 
   void routeToImage(GalleryImage image) {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => SingleImage(image)));
+        context,
+        MaterialPageRoute(
+            builder: (context) => SingleImage(
+                image
+                )));
+
+    /* --- USED FOR SERVER VERSION --- */
+
+    /* Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => SingleImage(
+                DomainCache
+                    .galleryImagesServer[_galleryImages.indexOf(image)]))); */
   }
 
   Future<bool> closeApp() async {
@@ -61,15 +81,24 @@ class GalleryPageState extends State<GalleryPage> {
   Future<bool> pickImageCamera() async {
     File img = await ImagePicker.pickImage(source: ImageSource.camera);
 
-    // DomainCache.galleryImages.add(img);
-
-    String uploadedImageUrl = await FlutterAmazonS3.uploadImage(
-          img.path, "BUCKET_NAME", "IDENTITY_POOL_ID");
-
+    // USED FOR LOCAL VERSION
     setState(() {
       _galleryImages
           .add(new GalleryImage(img, DateTime.now(), new List<Comment>()));
     });
+
+    /* --- USED FOR SERVER VERSION --- */
+
+    /* String uploadedImageUrl = await FlutterAmazonS3.uploadImage(
+        img.path, "BUCKET_NAME", "IDENTITY_POOL_ID");
+
+    GalleryImageServer galleryImageServer = new GalleryImageServer(
+        "image_${_galleryImages.length}", uploadedImageUrl);
+
+    var json = _jsonCodec.encode(galleryImageServer);
+
+    http.Response imageUploadResponse = await RequestHandler.executePostRequest(
+        ConstantRoutes.getImages + _prefs.getString("uuid"), json); */
 
     return true;
   }
@@ -77,15 +106,24 @@ class GalleryPageState extends State<GalleryPage> {
   Future<bool> pickImageGallery() async {
     File img = await ImagePicker.pickImage(source: ImageSource.gallery);
 
-    // DomainCache.galleryImages.add(img);
-
-    String uploadedImageUrl = await FlutterAmazonS3.uploadImage(
-          img.path, "BUCKET_NAME", "IDENTITY_POOL_ID");
-
+    // USED FOR LOCAL VERSION
     setState(() {
       _galleryImages
           .add(new GalleryImage(img, DateTime.now(), new List<Comment>()));
     });
+
+    /* --- USED FOR SERVER VERSION --- */
+
+    /* String uploadedImageUrl = await FlutterAmazonS3.uploadImage(
+        img.path, "BUCKET_NAME", "IDENTITY_POOL_ID");
+
+    GalleryImageServer galleryImageServer = new GalleryImageServer(
+        "image_${_galleryImages.length}", uploadedImageUrl);
+
+    var json = _jsonCodec.encode(galleryImageServer);
+
+    http.Response imageUploadResponse = await RequestHandler.executePostRequest(
+        ConstantRoutes.getImages + _prefs.getString("uuid"), json); */
 
     return true;
   }
@@ -114,7 +152,7 @@ class GalleryPageState extends State<GalleryPage> {
                     fontStyle: FontStyle.normal,
                     letterSpacing: 0.8,
                     fontSize: 16.0)),
-            accountEmail: Text(_prefs.getString("email"),
+            accountEmail: Text(_prefs.getInstance() != null ? _prefs.getString("email") : "Test user",
                 style: const TextStyle(
                     fontWeight: FontWeight.w400,
                     fontFamily: "Poppins",

@@ -190,10 +190,11 @@ class SingupState extends State<Signup> {
     _prefs.setString("password", _passwordController.text);
     _prefs.setBool("logged", true);
 
-    print(user);
-    
+    /* --- USED FOR SERVER VERSION ---*/
+    // _prefs.setString("uuid", responseBody["info"]["user"]["_id"]);
+
     DomainCache.user = user;
-    DomainCache.token = responseBody["info"]["token"];
+    // DomainCache.token = responseBody["info"]["token"];
 
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => GalleryPage()));

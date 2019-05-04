@@ -1,20 +1,34 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:async';
+import 'package:http/http.dart' as http;
 
 import '../helping_scripts/handlers/prefs_handler.dart';
+import '../helping_scripts/handlers/request_handler.dart';
+
+import '../CONSTANTS/constant_routes.dart';
 import '../cache/domain_cache.dart';
 
 import 'login.dart';
 
 import '../model/gallery_image.dart';
+import '../model/gallery_image_server.dart';
 import '../model/comment.dart';
 
 class SingleImage extends StatefulWidget {
   final GalleryImage _image;
-
   SingleImage(this._image);
 
   @override
   SingleImageState createState() => new SingleImageState(_image);
+
+  /* --- USED FOR SERVER VERSION --- */
+
+  /* final GalleryImageServer _imageServer;
+  SingleImage(this._image, this._imageServer); 
+
+  @override
+  SingleImageState createState() => new SingleImageState(_image, _imageServer); */
 }
 
 class SingleImageState extends State<SingleImage> {
@@ -23,16 +37,39 @@ class SingleImageState extends State<SingleImage> {
 
   final _commentController = TextEditingController();
   PrefsHandler _prefs;
+  final _jsonCodec = const JsonCodec();
 
   SingleImageState(this._image) {
     _prefs = new PrefsHandler();
   }
 
-  void _addComment(String text) {
+  /* --- USED FOR SERVER VERSION ---*/
+
+  /*final GalleryImageServer _imageServer;
+  SingleImageState(this._image, this._imageServer) {
+    _prefs = new PrefsHandler();
+  } */
+
+  Future<bool> _addComment(String text) async {
+    Comment comment =
+        new Comment(text, DateTime.now(), _prefs.getString("email"));
+
     setState(() {
-      _image.comments.add(new Comment(text, DateTime.now(), "My Profile", ""));
+      _image.comments.add(comment);
     });
     _commentController.text = "";
+
+    /* --- USED FOR SERVER VERSION ---*/
+
+    /* setState(() {
+      _imageServer.comments.add(comment);
+    });
+
+    var json = _jsonCodec.encode(comment);
+    http.Response responseAddComment = await RequestHandler.executePostRequest(
+        ConstantRoutes.getComments + _imageServer.uuid, json); */
+
+    return true;
   }
 
   Future<bool> saveUnlogged() async {

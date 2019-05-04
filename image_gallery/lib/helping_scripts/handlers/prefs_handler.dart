@@ -26,6 +26,10 @@ class PrefsHandler {
     return _instance.getString(key);
   }
 
+  SharedPreferences getInstance() {
+    return _instance;
+  }
+
   bool getBool(String key) {
     return _instance.getBool(key);
   }
