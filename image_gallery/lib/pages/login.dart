@@ -12,6 +12,7 @@ import '../CONSTANTS/constant_routes.dart';
 import '../pages/signup.dart';
 import '../pages/gallery.dart';
 
+import '../model/gallery_image.dart';
 import '../model/user.dart';
 import '../model/comment.dart';
 import '../model/gallery_image_server.dart';
@@ -134,7 +135,7 @@ class LoginState extends State<Login> {
     var json = _jsonCodec.encode(user);
 
     http.Response responseLogIn =
-        await RequestHandler.executePostRequest(ConstantRoutes.getUser, json);
+        await RequestHandler.executePostRequest(ConstantRoutes.loginUser, json);
 
     var responseBody = _jsonCodec.decode(responseLogIn.body);
     print(responseBody);
@@ -142,13 +143,12 @@ class LoginState extends State<Login> {
     if (responseLogIn.statusCode != 200) {
       _click.unlock();
       _onChangedLoad(false);
-      _showAlert(responseBody["error"]);
+      _showAlert(responseBody["info"][0]["msg"]);
       print(responseBody["error"]);
       return responseBody["error"];
     }
 
     _prefs.setString("email", _emailController.text);
-    _prefs.setString("password", _passwordController.text);
     _prefs.setBool("logged", true);
     DomainCache.user = user;
     // DomainCache.token = responseBody["info"]["token"];
@@ -184,6 +184,32 @@ class LoginState extends State<Login> {
     }
 
     DomainCache.galleryImagesServer = images; */
+
+    List<GalleryImage> images = new List<GalleryImage>();
+    List decodedImages = _prefs.getString("images") != null
+        ? _jsonCodec.decode(_prefs.getString("images"))
+        : null;
+
+    if (decodedImages != null) {
+      for (var i = 0; i < decodedImages.length; i++) {
+        List<Comment> comments = new List<Comment>();
+        List decodedCommens = decodedImages[i]["comments"];
+
+        for (var j = 0; j < decodedCommens.length; j++) {
+          Comment com = new Comment(
+              decodedCommens[j]["text"],
+              DateTime.parse(decodedCommens[j]["timeWritten"]),
+              decodedCommens[j]["writter"]);
+          comments.add(com);
+        }
+
+        GalleryImage img = new GalleryImage(decodedImages[i]["file"],
+            DateTime.parse(decodedImages[i]["timeTaken"]), comments);
+        images.add(img);
+      }
+    }
+
+    DomainCache.galleryImages = images;
 
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => GalleryPage()));

@@ -5,7 +5,7 @@ import '../model/gallery_image_server.dart';
 import '../model/user.dart';
 
 class DomainCache {
-  static List<File> galleryImages;
+  static List<GalleryImage> galleryImages;
   static List<GalleryImageServer> galleryImagesServer;
   static User user;
   static String token;

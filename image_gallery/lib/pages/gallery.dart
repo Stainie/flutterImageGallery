@@ -27,7 +27,7 @@ class GalleryPage extends StatefulWidget {
 }
 
 class GalleryPageState extends State<GalleryPage> {
-  List<GalleryImage> _galleryImages = new List<GalleryImage>();
+  List<GalleryImage> _galleryImages;
   PrefsHandler _prefs;
   ClickHandler _click;
   final _jsonCodec = const JsonCodec();
@@ -49,9 +49,10 @@ class GalleryPageState extends State<GalleryPage> {
   @override
   void initState() {
     super.initState();
-    // setState(() {
-    //   _galleryImages = DomainCache.galleryImages;
-    // });
+    setState(() {
+      _galleryImages = DomainCache.galleryImages;
+    });
+    print("init");
   }
 
   void routeToImage(GalleryImage image) {
@@ -59,7 +60,7 @@ class GalleryPageState extends State<GalleryPage> {
         context,
         MaterialPageRoute(
             builder: (context) => SingleImage(
-                image
+                image, _galleryImages.indexOf(image)
                 )));
 
     /* --- USED FOR SERVER VERSION --- */
@@ -81,11 +82,27 @@ class GalleryPageState extends State<GalleryPage> {
   Future<bool> pickImageCamera() async {
     File img = await ImagePicker.pickImage(source: ImageSource.camera);
 
+    if (img == null) {
+      return true;
+    }
+
+    if (_galleryImages == null) {
+      _galleryImages = new List<GalleryImage>();
+    }
+
     // USED FOR LOCAL VERSION
     setState(() {
       _galleryImages
-          .add(new GalleryImage(img, DateTime.now(), new List<Comment>()));
+          .add(new GalleryImage(img.path, DateTime.now(), new List<Comment>()));
     });
+
+    DomainCache.galleryImages = _galleryImages;
+
+    var json = _jsonCodec.encode(_galleryImages);
+
+    print(json);
+
+    _prefs.setString("images", _jsonCodec.encode(json));
 
     /* --- USED FOR SERVER VERSION --- */
 
@@ -106,11 +123,25 @@ class GalleryPageState extends State<GalleryPage> {
   Future<bool> pickImageGallery() async {
     File img = await ImagePicker.pickImage(source: ImageSource.gallery);
 
+    if (img == null) {
+      return true;
+    }
+
+    if (_galleryImages == null) {
+      _galleryImages = new List<GalleryImage>();
+    }
+
     // USED FOR LOCAL VERSION
     setState(() {
       _galleryImages
-          .add(new GalleryImage(img, DateTime.now(), new List<Comment>()));
+          .add(new GalleryImage(img.path, DateTime.now(), new List<Comment>()));
     });
+
+    DomainCache.galleryImages = _galleryImages;
+
+    var json = _jsonCodec.encode(_galleryImages);
+
+    _prefs.setString("images", json);
 
     /* --- USED FOR SERVER VERSION --- */
 
@@ -130,8 +161,7 @@ class GalleryPageState extends State<GalleryPage> {
 
   Future<bool> saveUnlogged() async {
     _prefs.setBool("logged", false);
-    _prefs.setString("uuid", "");
-    _prefs.setString("token", "");
+    _prefs.setString("email", "");
 
     Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
 
@@ -152,7 +182,7 @@ class GalleryPageState extends State<GalleryPage> {
                     fontStyle: FontStyle.normal,
                     letterSpacing: 0.8,
                     fontSize: 16.0)),
-            accountEmail: Text(_prefs.getInstance() != null ? _prefs.getString("email") : "Test user",
+            accountEmail: Text(DomainCache.user.email,
                 style: const TextStyle(
                     fontWeight: FontWeight.w400,
                     fontFamily: "Poppins",

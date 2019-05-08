@@ -33,7 +33,7 @@ class CardItem extends StatelessWidget {
                           5.0 * (MediaQuery.of(context).size.width / 375.0)),
                       margin: new EdgeInsets.all(
                           2.0 * (MediaQuery.of(context).size.width / 375.0)),
-                      child: Image.file(_data.file)),
+                      child: Image.file(File(_data.file))),
                   SizedBox(
                     height: 5.0,
                   ),

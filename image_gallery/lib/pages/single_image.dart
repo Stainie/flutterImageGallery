@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import '../helping_scripts/handlers/prefs_handler.dart';
@@ -17,10 +18,11 @@ import '../model/comment.dart';
 
 class SingleImage extends StatefulWidget {
   final GalleryImage _image;
-  SingleImage(this._image);
+  final int _index;
+  SingleImage(this._image, this._index);
 
   @override
-  SingleImageState createState() => new SingleImageState(_image);
+  SingleImageState createState() => new SingleImageState(_image, _index);
 
   /* --- USED FOR SERVER VERSION --- */
 
@@ -34,12 +36,13 @@ class SingleImage extends StatefulWidget {
 class SingleImageState extends State<SingleImage> {
   final GlobalKey<ScaffoldState> _drawerKey = new GlobalKey<ScaffoldState>();
   final GalleryImage _image;
+  final int _index;
 
   final _commentController = TextEditingController();
   PrefsHandler _prefs;
   final _jsonCodec = const JsonCodec();
 
-  SingleImageState(this._image) {
+  SingleImageState(this._image, this._index) {
     _prefs = new PrefsHandler();
   }
 
@@ -57,6 +60,12 @@ class SingleImageState extends State<SingleImage> {
     setState(() {
       _image.comments.add(comment);
     });
+
+    DomainCache.galleryImages[_index] = _image;
+
+    var json = _jsonCodec.encode(DomainCache.galleryImages);
+
+    _prefs.setString("images", json);
     _commentController.text = "";
 
     /* --- USED FOR SERVER VERSION ---*/
@@ -321,7 +330,7 @@ class SingleImageState extends State<SingleImage> {
           children: <Widget>[
             Container(
               width: MediaQuery.of(context).size.width - 5.0,
-              child: Image.file(_image.file),
+              child: Image.file(File(_image.file)),
             ),
             SizedBox(
               height: 10.0,

@@ -13,6 +13,9 @@ import '../CONSTANTS/constant_routes.dart';
 import 'gallery.dart';
 import 'login.dart';
 
+import '../model/user.dart';
+import '../model/gallery_image.dart';
+
 import '../cache/domain_cache.dart';
 import '../model/gallery_image_server.dart';
 import '../model/comment.dart';
@@ -80,8 +83,6 @@ class LandingPageState extends State<LandingPage>
   }
 
   Future<bool> _initAll() async {
-    DomainCache.galleryImages = new List<File>();
-
     _increaseAmount();
 
     await Future.delayed(Duration(seconds: 1));
@@ -101,7 +102,6 @@ class LandingPageState extends State<LandingPage>
     await Future.delayed(Duration(seconds: 1));
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    const jsonCodec = const JsonCodec();
     bool logged = false;
 
     if (prefs.getBool("logged") != null) {
@@ -109,7 +109,6 @@ class LandingPageState extends State<LandingPage>
     }
 
     if (logged) {
-
       if (prefs.getString("email") == null) {
         prefs.setBool("logged", false);
         _initAll();
@@ -143,13 +142,49 @@ class LandingPageState extends State<LandingPage>
 
       DomainCache.galleryImagesServer = images; */
 
+      http.Response responseUser = await RequestHandler.executeGetRequest(
+          ConstantRoutes.getUser + prefs.getString("email"));
+
+      var responseUserData = _jsonCodec.decode(responseUser.body);
+
+      User user = new User(responseUserData["user"]["email"],
+          responseUserData["user"]["password"]);
+
+      DomainCache.user = user;
+
+      List<GalleryImage> images = new List<GalleryImage>();
+      List decodedImages = prefs.getString("images") != null
+          ? _jsonCodec.decode(prefs.getString("images"))
+          : null;
+
+      if (decodedImages != null) {
+        for (var i = 0; i < decodedImages.length; i++) {
+          List<Comment> comments = new List<Comment>();
+          List decodedCommens = decodedImages[i]["comments"];
+
+          for (var j = 0; j < decodedCommens.length; j++) {
+            print("Entered comments");
+            Comment com = new Comment(
+                decodedCommens[j]["text"],
+                DateTime.parse(decodedCommens[j]["timeWritten"]),
+                decodedCommens[j]["writter"]);
+            comments.add(com);
+          }
+
+          GalleryImage img = new GalleryImage(decodedImages[i]["file"],
+              DateTime.parse(decodedImages[i]["timeTaken"]), comments);
+          images.add(img);
+        }
+      }
+
+      DomainCache.galleryImages = images;
+
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => GalleryPage()));
-          return true;
+      return true;
     }
 
     Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
-
 
     return true;
   }

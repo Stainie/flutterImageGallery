@@ -160,7 +160,7 @@ class SingupState extends State<Signup> {
     var json = _jsonCodec.encode(user);
 
     http.Response responseSignup = await RequestHandler.executePostRequest(
-        ConstantRoutes.createUser, json);
+        ConstantRoutes.getUser, json);
 
     if (responseSignup.statusCode != 200 && responseSignup.statusCode != 201) {
       var responseBody = _jsonCodec.decode(responseSignup.body);
@@ -173,7 +173,7 @@ class SingupState extends State<Signup> {
     }
 
     http.Response responseLogIn =
-        await RequestHandler.executePostRequest(ConstantRoutes.getUser, json);
+        await RequestHandler.executePostRequest(ConstantRoutes.loginUser, json);
 
     var responseBody = _jsonCodec.decode(responseLogIn.body);
     print(responseBody);
@@ -187,7 +187,6 @@ class SingupState extends State<Signup> {
     }
 
     _prefs.setString("email", _emailController.text);
-    _prefs.setString("password", _passwordController.text);
     _prefs.setBool("logged", true);
 
     /* --- USED FOR SERVER VERSION ---*/
